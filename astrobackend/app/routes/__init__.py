@@ -1,0 +1,1 @@
+# Ensures astro routes file is loaded (do not remove unless restructuring)
