@@ -2,7 +2,7 @@ import os
 import requests
 from flask_smorest import Blueprint
 from flask.views import MethodView
-from flask import request
+from flask import request, jsonify
 
 # Zodiac sign date ranges (western astrology)
 ZODIAC_SIGNS = [
@@ -18,12 +18,14 @@ ZODIAC_SIGNS = [
     ("Libra", (9, 23), (10, 22)),
     ("Scorpio", (10, 23), (11, 21)),
     ("Sagittarius", (11, 22), (12, 21)),
-    ("Capricorn", (12, 22), (12, 31))  # Capricorn: spans new year
-]from flask import jsonify
+    ("Capricorn", (12, 22), (12, 31)),  # Capricorn: spans new year
+]
+
 
 blp = Blueprint(
     "StarGuidance", "astro", url_prefix="/api", description="Astro/Horoscope API"
 )
+
 
 @blp.route("/horoscope", methods=["POST"])
 class HoroscopeAPI(MethodView):
@@ -64,7 +66,6 @@ class HoroscopeAPI(MethodView):
             "location": location_info,
         }
         return result, 200
-# PUBLIC_INTERFACE
 
 
 @blp.route("/geocode", methods=["POST"])
@@ -74,6 +75,7 @@ class GeocodeAPI(MethodView):
     Input: { "place": "Berlin, Germany" }
     Output: { "lat": 52.52, "lon": 13.405, ... }
     """
+
     def post(self):
         data = request.get_json()
         place = data.get("place") if data else None
@@ -208,9 +210,10 @@ def generate_ai_guidance(name, sign, horoscope, question, location):
 
     if question:
         base_prompt += (
-            f" The user asks: '{question}'.\n"
-            "As a wise astrologer and life coach, please provide tailored and positive daily advice "
-            "combining astrological insights and encouragement, responding to their concern."
+            " The user asks: '{question}'.\n"
+            "As a wise astrologer and life coach, please provide tailored and positive "
+            "daily advice combining astrological insights and encouragement, "
+            "responding to their concern."
         )
     else:
         base_prompt += (
@@ -269,5 +272,6 @@ def generate_ai_guidance(name, sign, horoscope, question, location):
 
     # fallback
     return (
-        "Stay positive! The stars encourage you to embrace the day with confidence and kindness."
+        "Stay positive! The stars encourage you to embrace the day with "
+        "confidence and kindness."
     )
