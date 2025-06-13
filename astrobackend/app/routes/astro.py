@@ -19,12 +19,11 @@ ZODIAC_SIGNS = [
     ("Scorpio", (10, 23), (11, 21)),
     ("Sagittarius", (11, 22), (12, 21)),
     ("Capricorn", (12, 22), (12, 31))  # Capricorn: spans new year
-]
+]from flask import jsonify
 
 blp = Blueprint(
     "StarGuidance", "astro", url_prefix="/api", description="Astro/Horoscope API"
 )
-
 
 @blp.route("/horoscope", methods=["POST"])
 class HoroscopeAPI(MethodView):
@@ -65,6 +64,38 @@ class HoroscopeAPI(MethodView):
             "location": location_info,
         }
         return result, 200
+# PUBLIC_INTERFACE
+
+
+@blp.route("/geocode", methods=["POST"])
+class GeocodeAPI(MethodView):
+    """
+    POST endpoint to geocode a place string. Returns latitude and longitude.
+    Input: { "place": "Berlin, Germany" }
+    Output: { "lat": 52.52, "lon": 13.405, ... }
+    """
+    def post(self):
+        data = request.get_json()
+        place = data.get("place") if data else None
+        if not place or not isinstance(place, str) or not place.strip():
+            return jsonify(
+                {"error": "Missing or invalid 'place' argument."}
+            ), 400
+
+        lat, lon, location_info = geocode_place(place)
+        if lat is None or lon is None:
+            return jsonify(
+                {"error": "Could not geocode location."}
+            ), 422
+
+        result = {
+            "lat": lat,
+            "lon": lon,
+            "city": location_info.get("city"),
+            "country": location_info.get("country"),
+            "location": location_info,
+        }
+        return jsonify(result), 200
 
 
 # PUBLIC_INTERFACE
